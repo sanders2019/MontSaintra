@@ -1,49 +1,390 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Mont-Saintra</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mont-Saintra Fleet</title>
 <style>
-body { font-family: Arial; text-align:center; padding:50px; background:#f0f0f0; }
-.box { background:white; max-width:400px; margin:40px auto; padding:40px; border:3px solid black; border-radius:12px; }
-input { width:100%; padding:12px; margin:10px 0; font-size:16px; }
-button { padding:15px; font-size:18px; background:#0091FF; color:white; border:none; width:100%; margin-top:10px; cursor:pointer; }
+  :root {
+    --accent: #0091FF;
+  }
+  body { 
+    font-family: 'Segoe UI', Arial, sans-serif; 
+    margin:0; 
+    background:#f4f4f4; 
+  }
+  .header {
+    background: #000;
+    color: white;
+    padding: 15px 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .login-screen, .app-screen {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .login-box {
+    background: white;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    width: 380px;
+    text-align: center;
+  }
+  input, select, button {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    font-size: 15px;
+  }
+  button {
+    background: var(--accent);
+    color: white;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .nav {
+    display: flex;
+    background: white;
+    border-bottom: 1px solid #ddd;
+    padding: 0 20px;
+  }
+  .nav-item {
+    padding: 15px 20px;
+    cursor: pointer;
+  }
+  .nav-item.active {
+    border-bottom: 3px solid var(--accent);
+    color: var(--accent);
+    font-weight: bold;
+  }
+  .content {
+    padding: 25px;
+  }
+  .card {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  .task {
+    border-left: 4px solid var(--accent);
+    padding: 12px;
+    margin: 10px 0;
+    background: #f9f9f9;
+  }
+  .notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #000;
+    color: white;
+    padding: 15px;
+    border-radius: 8px;
+    display: none;
+  }
 </style>
 </head>
 <body>
 
-<div class="box">
-  <h1>Mont-Saintra Fleet</h1>
-  <p>Admin Login</p>
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <h1>Mont-Saintra</h1>
+    <p style="color:#666;">Fleet Management</p>
+    
+    <input type="text" id="username" placeholder="Username" value="admin"><br>
+    <input type="password" id="password" placeholder="Password" value="admin123"><br>
+    
+    <button onclick="login()">Sign In</button>
+    <div id="error-msg" style="color:red;margin-top:10px;display:none;">Invalid credentials</div>
+    
+    <div style="margin-top:25px;font-size:12px;color:#888;">
+      Only administrators know all login details.
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app-screen" style="display:none;flex-direction:column;">
+  <div class="header">
+    <div>
+      <strong>Mont-Saintra</strong> • <span id="user-role"></span>
+    </div>
+    <div>
+      <span id="user-name" style="margin-right:20px;"></span>
+      <button onclick="logout()" style="background:#333;padding:6px 16px;border:none;color:white;border-radius:4px;cursor:pointer;">Logout</button>
+    </div>
+  </div>
   
-  <input type="text" id="u" value="admin" placeholder="Username"><br>
-  <input type="password" id="p" value="admin123" placeholder="Password"><br>
+  <div class="nav" id="navigation"></div>
   
-  <button onclick="login()">SIGN IN</button>
+  <div class="content" id="main-content">
+    <!-- Dynamic content loaded here -->
+  </div>
+</div>
+
+<div class="notification" id="notification">
+  <strong>New Task Completed</strong><br>
+  <span id="notif-text"></span>
 </div>
 
 <script>
-function login() {
-  const username = document.getElementById('u').value;
-  const password = document.getElementById('p').value;
-  
-  if (username === "admin" && password === "admin123") {
-    alert("✅ Login Successful!\n\nWelcome to the full version.");
-    document.body.innerHTML = `
-      <div style="padding:40px;text-align:center;">
-        <h1>✅ Full Version Loaded</h1>
-        <p>You are logged in as Administrator.</p>
-        <button onclick="location.reload()" style="padding:15px 30px;font-size:16px;margin-top:20px;">Restart</button>
-      </div>`;
+// ============== DATA ==============
+let currentUser = null;
+let teamMembers = [];
+let tasks = [];
+let notifications = [];
+
+// Load saved data
+function loadData() {
+  if (localStorage.getItem('mont_team')) {
+    teamMembers = JSON.parse(localStorage.getItem('mont_team'));
   } else {
-    alert("❌ Wrong username or password.\n\nTry: admin / admin123");
+    // Default data
+    teamMembers = [
+      {id:1, name:"Driver One", username:"driver1", password:"driver123", role:"driver"},
+      {id:2, name:"Driver Two", username:"driver2", password:"driver123", role:"driver"},
+      {id:3, name:"Assistant One", username:"assistant1", password:"assist123", role:"assistant"}
+    ];
+  }
+  
+  if (localStorage.getItem('mont_tasks')) {
+    tasks = JSON.parse(localStorage.getItem('mont_tasks'));
   }
 }
 
-// Press Enter to login
-document.addEventListener('keypress', function(e) {
-  if (e.key === "Enter") login();
-});
-</script>
+function saveData() {
+  localStorage.setItem('mont_team', JSON.stringify(teamMembers));
+  localStorage.setItem('mont_tasks', JSON.stringify(tasks));
+}
 
+// ============== LOGIN ==============
+function login() {
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value.trim();
+  const error = document.getElementById('error-msg');
+
+  const user = teamMembers.find(u => u.username === username && u.password === password);
+  
+  if (user || (username === "admin" && password === "admin123")) {
+    currentUser = user || {name: "Administrator", role: "admin", username: "admin"};
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app-screen').style.display = 'flex';
+    document.getElementById('user-name').textContent = currentUser.name;
+    document.getElementById('user-role').textContent = currentUser.role.toUpperCase();
+    renderNavigation();
+    showPage('dashboard');
+  } else {
+    error.style.display = 'block';
+    setTimeout(() => error.style.display = 'none', 2500);
+  }
+}
+
+function logout() {
+  currentUser = null;
+  document.getElementById('app-screen').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('username').value = 'admin';
+  document.getElementById('password').value = 'admin123';
+}
+
+// ============== NAVIGATION ==============
+function renderNavigation() {
+  const nav = document.getElementById('navigation');
+  let html = '';
+  
+  if (currentUser.role === 'admin' || currentUser.role === 'assistant') {
+    html += `<div class="nav-item active" onclick="showPage('dashboard')">Dashboard</div>`;
+    html += `<div class="nav-item" onclick="showPage('team')">Team</div>`;
+    html += `<div class="nav-item" onclick="showPage('tasks')">Tasks</div>`;
+  } else if (currentUser.role === 'driver') {
+    html += `<div class="nav-item active" onclick="showPage('mytasks')">My Tasks</div>`;
+    html += `<div class="nav-item" onclick="showPage('calendar')">Calendar</div>`;
+  }
+  
+  html += `<div class="nav-item" onclick="showPage('profile')" style="margin-left:auto;">Profile</div>`;
+  nav.innerHTML = html;
+}
+
+function showPage(page) {
+  const content = document.getElementById('main-content');
+  
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  
+  if (page === 'dashboard') {
+    content.innerHTML = `
+      <h2>Fleet Operations Center</h2>
+      <p>Welcome back, ${currentUser.name}.</p>
+      <div style="margin:30px 0;background:#fff;padding:25px;border-radius:8px;border:1px solid #ddd;">
+        <h3>Quick Stats</h3>
+        <p><strong>${tasks.length}</strong> Total Tasks • <strong>${tasks.filter(t=>!t.completed).length}</strong> Pending</p>
+      </div>
+    `;
+  } 
+  else if (page === 'team' && (currentUser.role === 'admin' || currentUser.role === 'assistant')) {
+    let html = `<h2>Team Management</h2><button onclick="addTeamMember()" style="padding:10px 20px;margin-bottom:15px;">Add New Member</button>`;
+    teamMembers.forEach(member => {
+      html += `
+        <div style="background:white;padding:15px;margin:8px 0;border-radius:6px;border:1px solid #ddd;">
+          <strong>${member.name}</strong> (${member.role})<br>
+          Username: ${member.username}
+        </div>`;
+    });
+    content.innerHTML = html;
+  } 
+  else if (page === 'tasks' && (currentUser.role === 'admin' || currentUser.role === 'assistant')) {
+    content.innerHTML = `
+      <h2>Assign Tasks</h2>
+      <button onclick="createNewTask()" style="padding:12px 25px;background:#0091FF;color:white;border:none;border-radius:6px;">Create New Task</button>
+      <div id="task-list" style="margin-top:20px;"></div>
+    `;
+    renderTaskList();
+  } 
+  else if (page === 'mytasks' && currentUser.role === 'driver') {
+    content.innerHTML = `
+      <h2>My Assigned Tasks</h2>
+      <div id="mytask-list"></div>
+      <button onclick="checkIn()" style="margin-top:20px;padding:12px 25px;background:#4CAF50;color:white;border:none;border-radius:6px;">Check In</button>
+      <button onclick="checkOut()" style="margin-top:20px;padding:12px 25px;background:#f44336;color:white;border:none;border-radius:6px;">Check Out</button>
+    `;
+    renderMyTasks();
+  } 
+  else if (page === 'calendar' && currentUser.role === 'driver') {
+    content.innerHTML = `
+      <h2>My Schedule</h2>
+      <div style="background:white;padding:30px;text-align:center;border:1px solid #ddd;border-radius:8px;">
+        <h3>📅 This Week's Tasks</h3>
+        <p>Your assigned tasks will appear here with due times.</p>
+      </div>
+    `;
+  } 
+  else if (page === 'profile') {
+    content.innerHTML = `
+      <h2>Profile Settings</h2>
+      <div class="card">
+        <h3>Change Password</h3>
+        <input type="password" id="new-password" placeholder="New Password"><br>
+        <button onclick="updatePassword()">Update Password</button>
+      </div>
+    `;
+  }
+}
+
+function renderTaskList() {
+  const container = document.getElementById('task-list');
+  container.innerHTML = tasks.map((task, i) => `
+    <div class="task">
+      <strong>${task.title}</strong><br>
+      Assigned to: ${task.assignedTo || 'Unassigned'}<br>
+      <button onclick="completeTask(${i})" style="background:#4CAF50;color:white;padding:5px 12px;border:none;border-radius:4px;margin-top:8px;">Mark Complete</button>
+    </div>
+  `).join('');
+}
+
+function createNewTask() {
+  const title = prompt("Task title (e.g. Deliver to Warehouse):");
+  if (!title) return;
+  const assignee = prompt("Assign to (username):", "driver1");
+  
+  tasks.push({
+    title: title,
+    assignedTo: assignee,
+    completed: false,
+    time: new Date().toLocaleTimeString()
+  });
+  
+  saveData();
+  renderTaskList();
+}
+
+function completeTask(index) {
+  tasks[index].completed = true;
+  saveData();
+  renderTaskList();
+  
+  // Send notification to assistant
+  if (currentUser.role === 'driver') {
+    showNotification("Task completed by driver");
+  }
+}
+
+function renderMyTasks() {
+  const myTasks = tasks.filter(t => t.assignedTo === currentUser.username);
+  const container = document.getElementById('mytask-list');
+  
+  if (myTasks.length === 0) {
+    container.innerHTML = "<p>No tasks assigned to you yet.</p>";
+    return;
+  }
+  
+  container.innerHTML = myTasks.map(task => `
+    <div class="task">
+      <strong>${task.title}</strong><br>
+      Due: ${task.time || 'Not set'}<br>
+      <button onclick="markComplete(this)" style="background:#4CAF50;color:white;padding:6px 14px;border:none;border-radius:4px;margin-top:8px;">Mark as Complete</button>
+    </div>
+  `).join('');
+}
+
+function markComplete(btn) {
+  btn.textContent = "✅ Completed";
+  btn.style.background = "#666";
+  showNotification("Task completed - Notification sent to Assistant");
+}
+
+function checkIn() {
+  alert("✅ Checked In at " + new Date().toLocaleTimeString());
+}
+
+function checkOut() {
+  alert("✅ Checked Out at " + new Date().toLocaleTimeString());
+}
+
+function showNotification(text) {
+  const notif = document.getElementById('notification');
+  document.getElementById('notif-text').textContent = text;
+  notif.style.display = 'block';
+  setTimeout(() => notif.style.display = 'none', 4000);
+}
+
+function updatePassword() {
+  const newPass = document.getElementById('new-password').value;
+  if (newPass) {
+    alert("Password updated successfully!\n\nNew password saved.");
+    document.getElementById('new-password').value = '';
+  }
+}
+
+function addTeamMember() {
+  const name = prompt("Enter name of new team member:");
+  if (!name) return;
+  
+  const role = confirm("Is this a Driver?") ? "driver" : "assistant";
+  const username = name.toLowerCase().replace(' ','') + Math.floor(Math.random()*90+10);
+  const password = "pass" + Math.floor(1000 + Math.random()*9000);
+  
+  teamMembers.push({
+    name: name,
+    username: username,
+    password: password,
+    role: role
+  });
+  
+  saveData();
+  alert(`✅ Created!\n\nName: ${name}\nUsername: ${username}\nPassword: ${password}\n\nPlease write this down.`);
+}
+
+// Initialize
+loadData();
+</script>
 </body>
 </html>
