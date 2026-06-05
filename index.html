@@ -186,9 +186,19 @@ function doLogin() {
   const p = document.getElementById('login-password').value.trim();
   const err = document.getElementById('login-error');
 
-  if (USERS[u] && USERS[u].password === p) {
+  // Check both static and dynamically added users
+  let userData = USERS[u];
+  
+  if (!userData) {
+    const savedUsers = ls('ftp_users', {});
+    if (savedUsers[u]) {
+      userData = savedUsers[u];
+    }
+  }
+
+  if (userData && userData.password === p) {
     err.style.display = 'none';
-    currentUser = {username: u, ...USERS[u]};
+    currentUser = {username: u, ...userData};
     lsSet('ftp_session', currentUser);
     showWelcome();
   } else {
