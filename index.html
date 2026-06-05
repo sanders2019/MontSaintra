@@ -33,9 +33,8 @@
       <div class="login-error" id="login-error"></div>
     </div>
     <div class="login-hint">
-      <strong>Demo Credentials:</strong><br>
-      Admin: <code>admin</code> / <code>admin123</code><br>
-      Driver: <code>driver1</code> / <code>driver123</code>
+      <strong>Admin Login Only</strong><br>
+      Contact administrator for driver credentials
     </div>
   </div>
 </div>
@@ -162,6 +161,14 @@ function initData() {
     };
     lsSet('ftp_profiles', userProfiles);
   }
+
+  // Load persistent users if available
+  const savedUsers = ls('ftp_users', {});
+  Object.keys(savedUsers).forEach(key => {
+    if (USERS[key]) {
+      USERS[key] = {...USERS[key], ...savedUsers[key]};
+    }
+  });
 }
 
 function getDrivers() { return ls('ftp_drivers', []); }
@@ -442,10 +449,18 @@ function updatePassword() {
     return;
   }
 
+  // Save password change persistently
   USERS[currentUser.username].password = newPwd;
+  
+  // Also update in localStorage if we have a persistent users store
+  let savedUsers = ls('ftp_users', {});
+  savedUsers[currentUser.username] = USERS[currentUser.username];
+  lsSet('ftp_users', savedUsers);
+
   closeModal();
-  showToast('Password updated successfully');
+  showToast('Password updated successfully and saved');
 }
+
 
 function saveProfileSettings() {
   const profile = {
@@ -686,14 +701,93 @@ if (savedSession) {
 
 // Add missing functions that are called but not defined in this optimized version
 function renderDrivers() { 
+  const drivers = getDrivers();
   const content = document.getElementById('content-area');
-  content.innerHTML = `<div class="card"><div class="card-title"><i class="fas fa-info-circle"></i>Driver Management</div><div class="empty-state"><i class="fas fa-users"></i><p>Driver management panel coming soon.<br>Currently ${getDrivers().length} drivers in system.</p></div></div>`;
+  content.innerHTML = `
+    <div style="margin-bottom:20px;">
+      <button class="btn-primary" onclick="openAddDriverModal()"><i class="fas fa-plus"></i> Add New Driver</button>
+    </div>
+    <div class="driver-cards" id="driver-list"></div>`;
+
+  const container = document.getElementById('driver-list');
+  if (!drivers.length) {
+    container.innerHTML = `<div class="empty-state"><i class="fas fa-users"></i><p>No drivers yet. Add your first driver above.</p></div>`;
+    return;
+  }
+
+  container.innerHTML = drivers.map(d => {
+    const van = getVans().find(v => v.id === d.vanId);
+    return `
+      <div class="driver-card">
+        <div class="driver-card-top">
+          <div class="driver-avatar">${d.name.charAt(0)}</div>
+          <div class="driver-card-info">
+            <div class="dname">${d.name}</div>
+            <div class="ddetail">${d.username} • ${d.hourlyRate}/hr</div>
+          </div>
+        </div>
+        <div class="driver-card-meta">
+          <div class="meta-item">
+            <div class="mlabel">Van</div>
+            <div class="mval">${van ? van.license : 'Unassigned'}</div>
+          </div>
+          <div class="meta-item">
+            <div class="mlabel">Status</div>
+            <div class="mval">${d.status === 'in' ? '🟢 On Duty' : '⚪ Off Duty'}</div>
+          </div>
+        </div>
+        <div class="driver-card-actions">
+          <button class="action-btn btn-edit" onclick="editDriver('${d.id}')">Edit</button>
+          <button class="action-btn btn-delete" onclick="deleteDriver('${d.id}')">Remove</button>
+        </div>
+      </div>`;
+  }).join('');
 }
 
+
 function renderUserCredentials() { 
+  const drivers = getDrivers();
   const content = document.getElementById('content-area');
-  content.innerHTML = `<div class="card"><div class="card-title"><i class="fas fa-key"></i>User Credentials</div><div class="empty-state"><i class="fas fa-id-card"></i><p>Credential management coming soon.</p></div></div>`;
+  content.innerHTML = `
+    <div style="margin-bottom:20px;">
+      <button class="btn-primary" onclick="openCreateUserModal()">
+        <i class="fas fa-user-plus"></i> Add New Driver
+      </button>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="fas fa-key"></i>Driver Login Credentials</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Driver</th><th>Username</th><th>Password</th><th>Status</th></tr></thead>
+          <tbody id="credentials-table"></tbody>
+        </table>
+      </div>
+    </div>`;
+
+  renderCredentialsTable();
 }
+
+function renderCredentialsTable() {
+  const tbody = document.getElementById('credentials-table');
+  const drivers = getDrivers();
+  tbody.innerHTML = '';
+
+  if (!drivers.length) {
+    tbody.innerHTML = `<tr><td colspan="4" class="empty-state"><i class="fas fa-users"></i><p>No drivers added yet</p></td></tr>`;
+    return;
+  }
+
+  drivers.forEach(driver => {
+    tbody.innerHTML += `
+      <tr>
+        <td><strong>${driver.name}</strong></td>
+        <td><code>${driver.username}</code></td>
+        <td><code>driver123</code></td>
+        <td><span class="badge badge-active">Active</span></td>
+      </tr>`;
+  });
+}
+
 
 function renderTimeLogs() { 
   const content = document.getElementById('content-area');
@@ -707,8 +801,172 @@ function renderPayroll() {
 
 function renderAdminTasks() { 
   const content = document.getElementById('content-area');
-  content.innerHTML = `<div class="card"><div class="card-title"><i class="fas fa-tasks"></i>Task Assignment</div><div class="empty-state"><i class="fas fa-clipboard-list"></i><p>No tasks assigned yet.<br>Use the button below to create one.</p><br><button class="btn-primary" onclick="alert('Task creation would go here in full version')">Create New Task</button></div></div>`;
+  content.innerHTML = `
+    <div style="display:flex;gap:12px;margin-bottom:20px;">
+      <button class="task-tab ${currentTaskTab==='all'?'active':''}" onclick="switchTaskTab('all')">All Tasks</button>
+      <button class="task-tab ${currentTaskTab==='pending'?'active':''}" onclick="switchTaskTab('pending')">Pending</button>
+      <button class="task-tab ${currentTaskTab==='completed'?'active':''}" onclick="switchTaskTab('completed')">Completed</button>
+      <button class="btn-primary" style="margin-left:auto;" onclick="openCreateTaskModal()">
+        <i class="fas fa-plus"></i> Create New Task
+      </button>
+    </div>
+    <div class="task-list" id="task-list"></div>`;
+
+  renderTaskList();
 }
+
+function switchTaskTab(tab) {
+  currentTaskTab = tab;
+  renderAdminTasks();
+}
+
+function renderTaskList() {
+  const tasks = getTasks();
+  let filtered = tasks;
+  
+  if (currentTaskTab === 'pending') filtered = tasks.filter(t => !t.completed);
+  if (currentTaskTab === 'completed') filtered = tasks.filter(t => t.completed);
+
+  const el = document.getElementById('task-list');
+  if (!filtered.length) {
+    el.innerHTML = `<div class="empty-state"><i class="fas fa-clipboard-list"></i><p>No tasks found</p></div>`;
+    return;
+  }
+
+  el.innerHTML = filtered.map(t => {
+    const assignee = getDrivers().find(d => d.id === t.assignedTo);
+    const due = new Date(t.dueDate);
+    const overdue = due < new Date() && !t.completed;
+    return `
+      <div class="task-item">
+        <div class="task-content">
+          <div class="task-title">${t.title}</div>
+          <div class="task-desc">${t.description || 'No description'}</div>
+          <div class="task-meta">
+            <span>👤 ${assignee ? assignee.name : 'Unassigned'}</span>
+            <span>📅 ${due.toLocaleDateString()}</span>
+            <span class="task-badge ${overdue ? 'urgent' : ''} ${t.completed ? 'completed' : ''}">
+              ${overdue ? 'OVERDUE' : t.completed ? 'COMPLETED' : 'PENDING'}
+            </span>
+          </div>
+        </div>
+        <div class="task-actions">
+          <button class="action-btn btn-edit" onclick="editTask('${t.id}')"><i class="fas fa-pen"></i></button>
+          <button class="action-btn btn-delete" onclick="deleteTask('${t.id}')"><i class="fas fa-trash"></i></button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function openCreateTaskModal() {
+  const drivers = getDrivers();
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const dueStr = tomorrow.toISOString().split('T')[0];
+
+  showModal(`
+    <h3><i class="fas fa-tasks"></i> Create New Task</h3>
+    <div class="form-field"><label>Task Title</label><input id="task-title" type="text" placeholder="Deliver packages to warehouse"></div>
+    <div class="form-field"><label>Description</label><textarea id="task-desc" style="height:90px;resize:none;" placeholder="Task details..."></textarea></div>
+    <div class="form-row">
+      <div class="form-field"><label>Assign To</label>
+        <select id="task-assignee">
+          ${drivers.length ? drivers.map(d => `<option value="${d.id}">${d.name}</option>`).join('') : '<option value="">No drivers yet</option>'}
+        </select>
+      </div>
+      <div class="form-field"><label>Due Date</label><input id="task-due" type="date" value="${dueStr}"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-primary" onclick="saveNewTask()"><i class="fas fa-save"></i> Create Task</button>
+      <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+    </div>
+  `);
+}
+
+function saveNewTask() {
+  const title = document.getElementById('task-title').value.trim();
+  const description = document.getElementById('task-desc').value.trim();
+  const assignedTo = document.getElementById('task-assignee').value;
+  const dueDate = document.getElementById('task-due').value;
+
+  if (!title || !assignedTo || !dueDate) {
+    showToast('Please fill all fields', 'error');
+    return;
+  }
+
+  const tasks = getTasks();
+  tasks.push({
+    id: 'T' + Date.now(),
+    title,
+    description,
+    assignedTo,
+    dueDate,
+    completed: false,
+    createdAt: Date.now()
+  });
+
+  saveTasks(tasks);
+  closeModal();
+  renderAdminTasks();
+  showToast('Task created successfully');
+}
+
+function editTask(taskId) {
+  const tasks = getTasks();
+  const task = tasks.find(t => t.id === taskId);
+  if (!task) return;
+
+  const drivers = getDrivers();
+  showModal(`
+    <h3><i class="fas fa-edit"></i> Edit Task</h3>
+    <div class="form-field"><label>Title</label><input id="edit-title" value="${task.title}"></div>
+    <div class="form-field"><label>Description</label><textarea id="edit-desc" style="height:90px;">${task.description||''}</textarea></div>
+    <div class="form-row">
+      <div class="form-field"><label>Assign To</label>
+        <select id="edit-assignee">
+          ${drivers.map(d => `<option value="${d.id}" ${d.id===task.assignedTo?'selected':''}>${d.name}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-field"><label>Due Date</label><input id="edit-due" type="date" value="${task.dueDate}"></div>
+    </div>
+    <div class="form-field"><label>Status</label>
+      <select id="edit-status">
+        <option value="false" ${!task.completed?'selected':''}>Pending</option>
+        <option value="true" ${task.completed?'selected':''}>Completed</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-primary" onclick="saveEditedTask('${taskId}')">Save Changes</button>
+      <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+    </div>
+  `);
+}
+
+function saveEditedTask(taskId) {
+  const tasks = getTasks();
+  const idx = tasks.findIndex(t => t.id === taskId);
+  if (idx === -1) return;
+
+  tasks[idx].title = document.getElementById('edit-title').value;
+  tasks[idx].description = document.getElementById('edit-desc').value;
+  tasks[idx].assignedTo = document.getElementById('edit-assignee').value;
+  tasks[idx].dueDate = document.getElementById('edit-due').value;
+  tasks[idx].completed = document.getElementById('edit-status').value === 'true';
+
+  saveTasks(tasks);
+  closeModal();
+  renderAdminTasks();
+  showToast('Task updated');
+}
+
+function deleteTask(taskId) {
+  if (!confirm('Delete this task?')) return;
+  const tasks = getTasks().filter(t => t.id !== taskId);
+  saveTasks(tasks);
+  renderAdminTasks();
+  showToast('Task deleted');
+}
+
 
 function renderAdminMessages() { 
   const content = document.getElementById('content-area');
@@ -716,9 +974,115 @@ function renderAdminMessages() {
 }
 
 function renderDriverDashboard() { 
+  const drivers = getDrivers();
+  const driver = drivers.find(d => d.id === currentUser.driverId) || {name: currentUser.name};
+  const myTasks = getTasks().filter(t => t.assignedTo === currentUser.driverId && !t.completed);
+  const pendingCount = myTasks.length;
+
   const content = document.getElementById('content-area');
-  content.innerHTML = `<div class="welcome-card"><div class="w-icon"><i class="fas fa-user"></i></div><div><h2>Welcome back, Driver</h2><p>Use the sidebar to access your Time Clock, Tasks, and Pay information.</p></div></div>`;
+  content.innerHTML = `
+    <div class="welcome-card">
+      <div class="w-icon"><i class="fas fa-user"></i></div>
+      <div>
+        <h2>Welcome back, ${driver.name}!</h2>
+        <p>${new Date().toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric'})}</p>
+        <div style="margin-top:16px;font-size:15px;">
+          You have <strong>${pendingCount}</strong> pending task${pendingCount !== 1 ? 's' : ''}.
+        </div>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-tasks"></i></div>
+        <div><div class="stat-val">${pendingCount}</div><div class="stat-label">Pending Tasks</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-clock"></i></div>
+        <div><div class="stat-val">${getTodayHoursForDriver(currentUser.driverId).toFixed(1)}</div><div class="stat-label">Hours Today</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><i class="fas fa-tasks"></i>Your Current Tasks</div>
+      <div class="task-list" id="driver-tasks-list"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><i class="fas fa-comment-dots"></i>Quick Message to Admin</div>
+      <textarea id="quick-message" style="width:100%;height:100px;padding:12px;border:2px solid #000;border-radius:8px;resize:none;" placeholder="Type message to admin..."></textarea>
+      <button class="btn-primary" style="margin-top:12px;" onclick="sendQuickMessage()">Send Message to Admin</button>
+    </div>`;
+  
+  renderDriverTasksList();
 }
+
+function renderDriverTasksList() {
+  const tasks = getTasks().filter(t => t.assignedTo === currentUser.driverId);
+  const container = document.getElementById('driver-tasks-list');
+  
+  if (!tasks.length) {
+    container.innerHTML = `<div class="empty-state"><i class="fas fa-clipboard-check"></i><p>No tasks assigned yet.</p></div>`;
+    return;
+  }
+
+  container.innerHTML = tasks.map(t => {
+    const due = new Date(t.dueDate);
+    const isOverdue = due < new Date() && !t.completed;
+    return `
+      <div class="task-item">
+        <div class="task-content">
+          <div class="task-title">${t.title}</div>
+          <div class="task-desc">${t.description || 'No description provided'}</div>
+          <div class="task-meta">
+            <span>Due: ${due.toLocaleDateString()}</span>
+            <span class="task-badge ${isOverdue ? 'urgent' : ''} ${t.completed ? 'completed' : ''}">
+              ${isOverdue ? 'OVERDUE' : t.completed ? 'DONE' : 'PENDING'}
+            </span>
+          </div>
+        </div>
+        <div class="task-actions">
+          <button class="action-btn ${t.completed ? 'btn-save' : 'btn-edit'}" onclick="toggleDriverTask('${t.id}')">
+            ${t.completed ? 'Undo' : 'Mark Complete'}
+          </button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function toggleDriverTask(taskId) {
+  const tasks = getTasks();
+  const task = tasks.find(t => t.id === taskId);
+  if (!task) return;
+  
+  task.completed = !task.completed;
+  saveTasks(tasks);
+  renderDriverDashboard();
+  showToast(task.completed ? 'Task marked complete' : 'Task marked pending');
+}
+
+function sendQuickMessage() {
+  const message = document.getElementById('quick-message').value.trim();
+  if (!message) {
+    showToast('Please type a message', 'error');
+    return;
+  }
+
+  const messages = getMessages();
+  messages.push({
+    id: 'M' + Date.now(),
+    fromUser: currentUser.driverId || 'driver',
+    toUser: 'admin',
+    content: message,
+    type: 'driver-to-admin',
+    sentAt: Date.now()
+  });
+
+  saveMessages(messages);
+  document.getElementById('quick-message').value = '';
+  showToast('Message sent to admin');
+}
+
 
 function renderTimeClock() { 
   const content = document.getElementById('content-area');
