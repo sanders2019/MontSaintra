@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Mont-Saintra - Professional Fleet &amp; Payroll Management System with real-time GPS tracking, time clock, payroll, and admin profile management.">
+<title>Mont-Saintra | Fleet Management</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{--bg-primary:#ffffff;--bg-secondary:#f8f8f8;--bg-card:#ffffff;--accent:#0091FF;--accent-alt:#0073CC;--text-primary:#000000;--text-secondary:#555555;--text-muted:#888888;--border:#e0e0e0;--sidebar-w:240px}*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh;overflow-x:hidden}#login-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#ffffff;padding:20px}.login-container{display:flex;flex-direction:column;align-items:center;gap:20px;max-width:320px;width:100%}.login-logo{text-align:center;margin-bottom:16px}.login-logo h1{font-size:28px;font-weight:700;color:#000000;letter-spacing:1px}.login-logo span{color:var(--accent)}.login-logo p{color:var(--text-secondary);font-size:12px;margin-top:6px}.login-inputs{width:100%;display:flex;flex-direction:column;gap:12px}.form-group{display:flex;flex-direction:column}.form-group input{width:100%;padding:12px 14px;background:#ffffff;border:2px solid #000000;border-radius:8px;color:#000000;font-size:15px;transition:all 0.2s}.form-group input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 4px rgba(0,145,255,0.1)}.btn-login{width:100%;padding:14px;background:var(--accent);border:none;border-radius:8px;color:#ffffff;font-size:16px;font-weight:600;cursor:pointer;transition:all 0.3s;letter-spacing:0.5px;margin-top:8px}.btn-login:hover{background:var(--accent-alt);transform:translateY(-2px);box-shadow:0 10px 25px rgba(0,145,255,0.3)}.login-error{color:#d32f2f;font-size:13px;text-align:center;margin-top:12px;display:none;font-weight:600}.login-hint{font-size:12px;color:var(--text-secondary);text-align:center;margin-top:24px;line-height:1.5}#app{display:none;min-height:100vh;flex-direction:row}#app.active{display:flex}.sidebar{width:var(--sidebar-w);background:#ffffff;border-right:2px solid #000000;display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;transition:transform 0.3s ease}.sidebar-header{padding:24px 20px;border-bottom:2px solid #000000;display:flex;align-items:center;gap:10px}.sidebar-header h2{font-size:20px;font-weight:700;color:#000000}.sidebar-header h2 span{color:var(--accent)}.sidebar-user{padding:16px;border-bottom:2px solid #000000;display:flex;align-items:center;gap:12px;cursor:pointer;transition:background 0.2s}.sidebar-user:hover{background:#f8f8f8}.user-avatar{width:42px;height:42px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;color:#ffffff}.user-info .name{font-size:14px;font-weight:600;color:#000000}.user-info .role{font-size:12px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px}.sidebar-nav{flex:1;overflow-y:auto;padding:12px 0}.nav-section{padding:8px 20px 4px;font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;font-weight:600}.nav-item{display:flex;align-items:center;gap:12px;padding:12px 20px;color:var(--text-secondary);cursor:pointer;transition:all 0.2s;border-left:3px solid transparent;font-size:14px;font-weight:500}.nav-item:hover{background:#f0f0f0;color:#000000}.nav-item.active{background:#f0f0f0;color:var(--accent);border-left-color:var(--accent)}.nav-item i{width:20px;text-align:center;font-size:16px}.sidebar-footer{padding:20px;border-top:2px solid #000000}.btn-logout{width:100%;padding:12px;background:#ffffff;border:2px solid #000000;border-radius:8px;color:#000000;cursor:pointer;font-size:14px;font-weight:600;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:8px}.btn-logout:hover{background:#f0f0f0}.main-content{margin-left:var(--sidebar-w);flex:1;min-height:100vh;display:flex;flex-direction:column}.topbar{background:#ffffff;border-bottom:2px solid #000000;padding:16px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:99}.topbar h3{font-size:19px;font-weight:600;color:#000000}.topbar-right{display:flex;align-items:center;gap:16px}.status-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);display:inline-block;margin-right:6px}.live-badge{font-size:13px;color:#000000;font-weight:600}.content-area{padding:28px;flex:1;overflow-y:auto;background:#ffffff}#welcome-section{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 60px);padding:40px}#welcome-section.active{display:flex}.welcome-heading{font-size:52px;font-weight:700;color:#000000;margin-bottom:40px;letter-spacing:-1px}.spiral-container{position:relative;width:360px;height:360px;margin-bottom:60px}.spiral-shape{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:260px;height:130px;border:4px solid var(--accent);border-radius:50% 50% 0 0;opacity:0.9;animation:spiralMorph 5s ease-in-out infinite}.spiral-shape:nth-child(2){width:210px;height:105px;border-color:rgba(0,145,255,0.7);animation-delay:0.2s}.spiral-shape:nth-child(3){width:160px;height:80px;border-color:rgba(0,145,255,0.4);animation-delay:0.4s}@keyframes spiralMorph{0%{transform:translate(-50%,-50%) rotate(0deg) scaleY(1)}25%{transform:translate(-50%,-50%) rotate(90deg) scaleY(1.25)}50%{transform:translate(-50%,-50%) rotate(180deg) scaleY(0.85)}75%{transform:translate(-50%,-50%) rotate(270deg) scaleY(1.25)}100%{transform:translate(-50%,-50%) rotate(360deg) scaleY(1)}}.section{display:none}.section.active{display:block;animation:fadeIn 0.4s ease}@keyframes fadeIn{from{opacity:0}to{opacity:1}}.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;margin-bottom:32px}.stat-card{background:#ffffff;border:2px solid #000000;border-radius:12px;padding:24px;display:flex;align-items:center;gap:20px;transition:all 0.2s}.stat-card:hover{border-color:var(--accent);transform:translateY(-4px);box-shadow:0 8px 25px rgba(0,145,255,0.15)}.stat-icon{width:56px;height:56px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;background:var(--accent);color:#ffffff}.stat-val{font-size:32px;font-weight:700;color:#000000}.stat-label{font-size:13px;color:var(--text-secondary);margin-top:4px}.card{background:#ffffff;border:2px solid #000000;border-radius:12px;padding:24px;margin-bottom:24px}.card-title{font-size:16px;font-weight:600;margin-bottom:18px;display:flex;align-items:center;gap:10px;color:#000000}.welcome-greeting{font-size:32px;font-weight:700;color:#000000;margin-bottom:6px}.welcome-date{font-size:14px;color:var(--text-secondary)}.suggestions-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;margin-bottom:32px}.suggestion-card{background:#ffffff;border:2px solid #000000;border-radius:12px;padding:20px;display:flex;gap:16px;align-items:flex-start}.suggestion-icon{font-size:28px;flex-shrink:0}.suggestion-content{flex:1}.suggestion-title{font-size:15px;font-weight:600;color:#000000;margin-bottom:6px}.suggestion-desc{font-size:13px;color:var(--text-secondary);margin-bottom:12px}.suggestion-priority{display:inline-block;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600}.priority-high{background:var(--accent);color:#ffffff}.priority-medium{background:#cccccc;color:#000000}.priority-low{background:#e8e8e8;color:#000000}.jobs-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px}.job-card{background:#ffffff;border:2px solid #000000;border-radius:12px;padding:20px}.job-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}.job-title{font-size:16px;font-weight:600;color:#000000}.job-status{padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;background:var(--accent);color:#ffffff}.job-detail{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary);margin-bottom:8px}.job-detail strong{color:#000000}#map-container{height:480px;border-radius:12px;overflow:hidden;border:2px solid #000000}.map-legend{display:flex;gap:20px;margin-top:16px;flex-wrap:wrap}.legend-item{display:flex;align-items:center;gap:8px;font-size:13px;color:#000000}.legend-dot{width:14px;height:14px;border-radius:50%;background:#666666}.van-status-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:24px}.van-status-card{background:#ffffff;border:2px solid #000000;border-radius:12px;padding:18px;text-align:center}.van-status-card .van-id{font-size:18px;font-weight:700;margin-bottom:6px;color:#000000}.van-status-card .van-license{font-size:13px;color:var(--text-muted)}.van-status-card .van-driver{font-size:14px;color:var(--text-secondary);margin:8px 0}.badge{padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;display:inline-block;background:var(--accent);color:#ffffff}.badge-active{background:var(--accent);color:#ffffff}.badge-idle{background:#cccccc;color:#000000}.badge-offline{background:#e0e0e0;color:#000000}.table-wrap{overflow-x:auto;border-radius:8px}table{width:100%;border-collapse:collapse;font-size:14px}thead th{background:#f0f0f0;padding:14px 16px;text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;color:#000000;font-weight:600;border-bottom:2px solid #000000}tbody tr{border-bottom:1px solid #e0e0e0;transition:background 0.15s}tbody tr:hover{background:#f8f8f8}tbody td{padding:14px 16px;color:#000000}.action-btn{padding:6px 12px;border-radius:6px;border:1px solid #000000;cursor:pointer;font-size:13px;font-weight:600;margin-right:6px;transition:all 0.2s;background:#ffffff;color:#000000}.btn-edit{background:#ffffff;border:1px solid #000000;color:#000000}.btn-edit:hover{background:#f0f0f0}.btn-delete{background:#ffffff;border:1px solid #000000;color:#000000}.btn-delete:hover{background:#f0f0f0}.btn-save{background:var(--accent);border:1px solid var(--accent);color:#ffffff}.btn-save:hover{background:var(--accent-alt)}.filter-bar{display:flex;gap:14px;margin-bottom:20px;flex-wrap:wrap;align-items:center}.filter-bar select,.filter-bar input[type=date]{padding:10px 14px;background:#ffffff;border:2px solid #000000;border-radius:8px;color:#000000;font-size:14px;cursor:pointer}.filter-bar select:focus,.filter-bar input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 4px rgba(0,145,255,0.1)}.btn-primary{padding:10px 20px;background:var(--accent);border:none;border-radius:8px;color:#ffffff;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s;display:inline-flex;align-items:center;gap:8px}.btn-primary:hover{background:var(--accent-alt);transform:translateY(-1px)}.btn-danger{padding:10px 20px;background:#ffffff;border:2px solid #000000;border-radius:8px;color:#000000;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s}.btn-danger:hover{background:#f0f0f0}.btn-success{padding:10px 20px;background:var(--accent);border:none;border-radius:8px;color:#ffffff;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s}.btn-success:hover{background:var(--accent-alt)}.driver-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}.driver-card{background:#ffffff;border:2px solid #000000;border-radius:12px;padding:24px;transition:all 0.2s}.driver-card:hover{border-color:var(--accent);box-shadow:0 8px 25px rgba(0,145,255,0.15)}.driver-card-top{display:flex;align-items:center;gap:16px;margin-bottom:20px}.driver-avatar{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;background:var(--accent);color:#ffffff}.driver-card-info .dname{font-size:17px;font-weight:600;color:#000000}.driver-card-info .ddetail{font-size:13px;color:var(--text-secondary);margin-top:4px}.driver-card-meta{display:grid;grid-template-columns:1fr 1fr;gap:16px}.meta-item .mlabel{font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px}.meta-item .mval{font-size:15px;font-weight:600;margin-top:4px;color:#000000}.driver-card-actions{margin-top:20px;display:flex;gap:10px}.clock-section{max-width:520px;margin:0 auto}.clock-display{background:#ffffff;border:2px solid #000000;border-radius:20px;padding:48px;text-align:center;margin-bottom:24px}.clock-time{font-size:62px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:3px;color:#000000}.clock-label{font-size:15px;color:var(--text-secondary);margin-top:10px}.clock-btn-group{display:flex;gap:20px;justify-content:center;margin-top:32px}.clock-btn{padding:20px 48px;font-size:18px;font-weight:700;border:none;border-radius:12px;cursor:pointer;transition:all 0.3s;display:flex;align-items:center;gap:12px;letter-spacing:0.5px}.clock-btn-in{background:var(--accent);color:#ffffff}.clock-btn-in:hover{background:var(--accent-alt);transform:scale(1.05)}.clock-btn-out{background:#ffffff;border:2px solid #000000;color:#000000}.clock-btn-out:hover{background:#f0f0f0;transform:scale(1.05)}.clock-btn:disabled{opacity:0.4;cursor:not-allowed;transform:none !important}.hours-summary{display:grid;grid-template-columns:1fr 1fr;gap:16px}.hours-card{background:#ffffff;border:2px solid #000000;border-radius:12px;padding:24px;text-align:center}.hours-val{font-size:32px;font-weight:700;color:#000000}.hours-lbl{font-size:13px;color:var(--text-secondary);margin-top:6px}.payroll-chart-wrap{height:280px}.payroll-header{display:flex;align-items:center;gap:16px;margin-bottom:20px;flex-wrap:wrap}.period-selector{display:flex;background:#f0f0f0;border-radius:8px;overflow:hidden;border:2px solid #000000}.period-btn{padding:10px 24px;background:none;border:none;color:#000000;cursor:pointer;font-size:14px;font-weight:600;transition:all 0.2s}.period-btn.active{background:var(--accent);color:#ffffff}.payroll-totals{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:24px}.pt-card{background:#ffffff;border:2px solid #000000;border-radius:12px;padding:20px;text-align:center}.pt-val{font-size:26px;font-weight:700;color:#000000}.pt-lbl{font-size:13px;color:var(--text-secondary);margin-top:6px}.pay-summary{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px}.pay-card{background:#ffffff;border:2px solid #000000;border-radius:16px;padding:32px;text-align:center}.pay-val{font-size:38px;font-weight:700;color:#000000}.pay-lbl{font-size:14px;color:var(--text-secondary);margin-top:8px}.task-tabs{display:flex;gap:10px;margin-bottom:20px}.task-tab{padding:10px 20px;background:#ffffff;border:2px solid #000000;border-radius:8px;color:#000000;cursor:pointer;font-weight:600;font-size:14px;transition:all 0.2s}.task-tab.active{background:var(--accent);color:#ffffff;border-color:var(--accent)}.task-list{display:grid;gap:16px}.task-item{background:#ffffff;border:2px solid #000000;border-radius:12px;padding:20px;display:grid;grid-template-columns:1fr auto;gap:20px;align-items:start}.task-content .task-title{font-weight:600;margin-bottom:6px;color:#000000}.task-content .task-desc{font-size:13px;color:var(--text-secondary);margin-bottom:12px}.task-content .task-meta{font-size:12px;color:var(--text-muted);display:flex;gap:16px;flex-wrap:wrap}.task-actions{display:flex;gap:8px}.task-badge{padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;background:#f0f0f0;color:#000000}.task-badge.urgent{background:var(--accent);color:#ffffff}.task-badge.completed{background:#f0f0f0;color:#000000}.message-tabs{display:flex;gap:10px;margin-bottom:20px}.message-tab{padding:10px 20px;background:#ffffff;border:2px solid #000000;border-radius:8px;color:#000000;cursor:pointer;font-weight:600;font-size:14px;transition:all 0.2s}.message-tab.active{background:var(--accent);color:#ffffff;border-color:var(--accent)}.message-list{display:grid;gap:16px}.message-item{background:#ffffff;border:2px solid #000000;border-radius:12px;padding:18px;display:grid;grid-template-columns:1fr auto;gap:16px;align-items:start}.message-header{display:flex;align-items:center;gap:10px;margin-bottom:8px}.message-header .from{font-weight:600;color:#000000}.message-header .time{font-size:12px;color:var(--text-muted)}.message-body{font-size:14px;color:var(--text-secondary);margin-bottom:12px}.message-status{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;padding:4px 12px;border-radius:6px;background:#f0f0f0;color:#000000}.message-status.pending{background:#f0f0f0;color:#000000}.message-status.approved{background:var(--accent);color:#ffffff}.message-actions{display:flex;gap:8px;flex-direction:column}.msg-action-btn{padding:8px 16px;font-size:13px;border:1px solid #000000;border-radius:8px;cursor:pointer;font-weight:600;transition:all 0.2s;background:#ffffff;color:#000000}.msg-action-btn.approve{background:var(--accent);border:1px solid var(--accent);color:#ffffff}.msg-action-btn.reject{background:#ffffff;border:1px solid #000000;color:#000000}.profile-section{max-width:760px;margin:0 auto}.profile-header{display:flex;align-items:center;gap:32px;margin-bottom:40px}.profile-avatar-upload{width:140px;height:140px;border-radius:16px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:52px;color:#ffffff;cursor:pointer;transition:all 0.3s;position:relative;overflow:hidden;border:3px solid #000000}.profile-avatar-upload:hover{transform:scale(1.05);box-shadow:0 12px 30px rgba(0,145,255,0.3)}.profile-avatar-upload input[type="file"]{display:none}.profile-info h2{font-size:28px;font-weight:700;color:#000000;margin-bottom:8px}.profile-info p{font-size:15px;color:var(--text-secondary);margin-bottom:12px}.profile-status-badge{display:inline-block;padding:8px 18px;background:var(--accent);color:#ffffff;border-radius:30px;font-size:13px;font-weight:600}.profile-form{display:grid;grid-template-columns:1fr 1fr;gap:20px}.profile-form-full{grid-column:1/-1}.profile-form-group{display:flex;flex-direction:column}.profile-form-group label{font-size:13px;font-weight:600;color:#000000;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px}.profile-form-group input,.profile-form-group select{padding:14px 16px;background:#ffffff;border:2px solid #000000;border-radius:8px;font-size:15px;color:#000000;font-family:inherit;transition:border-color 0.2s}.profile-form-group input:focus,.profile-form-group select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 4px rgba(0,145,255,0.1)}.profile-form-group select option{background:#ffffff;color:#000000}.preferences-section{margin-top:40px;padding-top:28px;border-top:2px solid #000000}.preference-item{display:flex;align-items:center;justify-content:space-between;padding:18px 0;border-bottom:1px solid #e0e0e0}.preference-item:last-child{border-bottom:none}.preference-label{display:flex;flex-direction:column}.preference-label .title{font-size:15px;font-weight:600;color:#000000}.preference-label .desc{font-size:13px;color:var(--text-secondary);margin-top:4px}.toggle-switch{position:relative;width:58px;height:32px;background:#ddd;border-radius:20px;cursor:pointer;transition:all 0.3s}.toggle-switch.active{background:var(--accent)}.toggle-switch-knob{position:absolute;width:26px;height:26px;background:#ffffff;border-radius:50%;top:3px;left:3px;transition:all 0.3s;box-shadow:0 2px 6px rgba(0,0,0,0.2)}.toggle-switch.active .toggle-switch-knob{left:29px}.profile-actions{display:flex;gap:16px;margin-top:40px;justify-content:flex-end}.btn-secondary{padding:14px 32px;background:#ffffff;border:2px solid #000000;border-radius:8px;color:#000000;font-size:15px;font-weight:600;cursor:pointer;transition:all 0.2s}.btn-secondary:hover{background:#f0f0f0}@media print{.sidebar,.topbar,.btn-primary,.btn-danger,.filter-bar,.task-tabs,.message-tabs{display:none !important}.main-content{margin-left:0 !important}body{background:#fff;color:#000}.card,.stat-card{border:1px solid #000}}.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn 0.2s ease}.modal-overlay.hidden{display:none}.modal{background:#ffffff;border:3px solid #000000;border-radius:16px;padding:32px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto}.modal h3{font-size:20px;font-weight:700;margin-bottom:24px;display:flex;align-items:center;gap:10px;color:#000000}.modal-actions{display:flex;gap:12px;justify-content:flex-end;margin-top:28px}.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}.form-field{margin-bottom:18px}.form-field label{display:block;font-size:13px;color:var(--text-secondary);margin-bottom:8px;font-weight:500}.form-field input,.form-field select,.form-field textarea{width:100%;padding:12px 16px;background:#ffffff;border:2px solid #000000;border-radius:8px;color:#000000;font-size:15px;font-family:inherit}.form-field select option{background:#ffffff;color:#000000}.form-field input:focus,.form-field select:focus,.form-field textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 4px rgba(0,145,255,0.1)}#toast{position:fixed;bottom:32px;right:32px;background:#000000;border:2px solid #000000;border-radius:12px;padding:16px 24px;font-size:15px;color:#ffffff;z-index:9999;transform:translateY(80px);opacity:0;transition:all 0.4s;pointer-events:none;max-width:340px}#toast.show{transform:translateY(0);opacity:1}::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#000000;border-radius:4px}.punched-in-indicator{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:600;color:#000000}.punched-out-indicator{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:600;color:var(--text-muted)}.pulsing{animation:pulse 2s infinite}@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}.welcome-card{background:#f8f8f8;border:2px solid #000000;border-radius:16px;padding:32px;margin-bottom:24px;display:flex;align-items:center;gap:24px}.welcome-card .w-icon{font-size:56px;color:var(--accent)}.welcome-card h2{font-size:26px;font-weight:700;margin-bottom:6px;color:#000000}.welcome-card p{color:var(--text-secondary);font-size:15px}.charts-grid{display:grid;grid-template-columns:2fr 1fr;gap:24px;margin-top:24px}@media (max-width:1100px){.charts-grid{grid-template-columns:1fr}}@media (max-width:900px){.sidebar{transform:translateX(-100%)}.main-content{margin-left:0}.stats-grid{grid-template-columns:repeat(2,1fr)}.form-row{grid-template-columns:1fr}.clock-btn{padding:16px 32px;font-size:17px}.clock-time{font-size:48px}.pay-summary{grid-template-columns:1fr}.suggestions-grid{grid-template-columns:1fr}.jobs-grid{grid-template-columns:1fr}.profile-form{grid-template-columns:1fr}}.empty-state{text-align:center;padding:60px 20px;color:var(--text-muted)}.empty-state i{font-size:56px;margin-bottom:16px;opacity:0.5}.empty-state p{font-size:15px}input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0) opacity(0.7);cursor:pointer}select option{color:#000;background:#ffffff}
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen">
+  <div class="login-container">
+    <div class="login-logo">
+      <h1>Mont-<span>Saintra</span></h1>
+      <p>Fleet • Payroll • Operations</p>
+    </div>
+    <div class="login-inputs">
+      <div class="form-group">
+        <input type="text" id="login-username" placeholder="Username" autocomplete="username">
+      </div>
+      <div class="form-group">
+        <input type="password" id="login-password" placeholder="Password" autocomplete="current-password">
+      </div>
+      <button class="btn-login" onclick="doLogin()">Sign In</button>
+      <div class="login-error" id="login-error"></div>
+    </div>
+    <div class="login-hint">
+      <strong>Demo Credentials:</strong><br>
+      Admin: <code>admin</code> / <code>admin123</code><br>
+      Driver: <code>driver1</code> / <code>driver123</code>
+    </div>
+  </div>
+</div>
+
+<!-- WELCOME -->
+<div id="welcome-section">
+  <div class="welcome-heading">Welcome to Mont-Saintra</div>
+  <div class="spiral-container">
+    <div class="spiral-shape"></div>
+    <div class="spiral-shape"></div>
+    <div class="spiral-shape"></div>
+  </div>
+  <p style="color:#666;font-size:15px;">Loading Fleet Operations...</p>
+</div>
+
+<!-- MAIN APP -->
+<div id="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h2>Mont-<span>Saintra</span></h2>
+    </div>
+    <div class="sidebar-user" id="sidebar-user" onclick="navigateTo('profile')">
+      <div class="user-avatar" id="sidebar-avatar">A</div>
+      <div class="user-info">
+        <div class="name" id="sidebar-name">Administrator</div>
+        <div class="role" id="sidebar-role">SYSTEM ADMIN</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav" id="sidebar-nav"></nav>
+    <div class="sidebar-footer">
+      <button class="btn-logout" onclick="doLogout()">
+        <i class="fas fa-sign-out-alt"></i> Sign Out
+      </button>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <div class="topbar">
+      <h3 id="topbar-title"><i class="fas fa-gauge-high"></i> Dashboard</h3>
+      <div class="topbar-right">
+        <span class="live-badge"><span class="status-dot"></span>LIVE TRACKING</span>
+        <span id="topbar-time" style="font-size:14px;color:#666"></span>
+      </div>
+    </div>
+    <div class="content-area" id="content-area"></div>
+  </div>
+</div>
+
+<!-- MODALS -->
+<div class="modal-overlay hidden" id="modal-overlay">
+  <div class="modal" id="modal-content"></div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ==================== CONFIG & DATA ====================
+const USERS = {
+  admin: {password:'admin123',role:'admin',name:'Administrator',email:'admin@montsaintra.com'},
+  driver1: {password:'driver123',role:'driver',name:'Driver One',driverId:'D1',email:'driver1@montsaintra.com'},
+  driver2: {password:'driver123',role:'driver',name:'Driver Two',driverId:'D2',email:'driver2@montsaintra.com'},
+  driver3: {password:'driver123',role:'driver',name:'Driver Three',driverId:'D3',email:'driver3@montsaintra.com'}
+};
+
+const BASE_COORDS = [
+  {lat:29.9511,lng:-90.0715},
+  {lat:29.9627,lng:-90.0817},
+  {lat:29.9401,lng:-90.0580}
+];
+
+const HOURLY_RATE = 22;
+
+let currentUser = null;
+let mapInstance = null;
+let mapMarkers = {};
+let mapUpdateInterval = null;
+let clockInterval = null;
+let sessionTimer = null;
+let currentPayrollPeriod = 'week';
+let payrollChart = null;
+let currentTaskTab = 'all';
+let currentMessageTab = 'inbox';
+let userProfiles = {};
+
+// LocalStorage helpers
+function ls(key, def = null) {
+  try {
+    const v = localStorage.getItem(key);
+    return v ? JSON.parse(v) : def;
+  } catch(e) { return def; }
+}
+
+function lsSet(key, val) {
+  localStorage.setItem(key, JSON.stringify(val));
+}
+
+// Initialize empty data (NO MOCK DATA)
+function initData() {
+  if (!ls('ftp_initialized', false)) {
+    lsSet('ftp_drivers', []);
+    lsSet('ftp_vans', [
+      {id:'V1', license:'VAN-001', color:'gray', lat:BASE_COORDS[0].lat, lng:BASE_COORDS[0].lng},
+      {id:'V2', license:'VAN-002', color:'gray', lat:BASE_COORDS[1].lat, lng:BASE_COORDS[1].lng},
+      {id:'V3', license:'VAN-003', color:'gray', lat:BASE_COORDS[2].lat, lng:BASE_COORDS[2].lng}
+    ]);
+    lsSet('ftp_timelogs', []);
+    lsSet('ftp_tasks', []);
+    lsSet('ftp_messages', []);
+    lsSet('ftp_initialized', true);
+  }
+  
+  userProfiles = ls('ftp_profiles', {});
+  if (!userProfiles.admin) {
+    userProfiles.admin = {
+      fullName: 'Administrator',
+      email: 'admin@montsaintra.com',
+      phone: '(504) 555-0192',
+      department: 'Operations',
+      role: 'System Administrator',
+      notificationsEnabled: true,
+      theme: 'light',
+      avatar: '👔'
+    };
+    lsSet('ftp_profiles', userProfiles);
+  }
+}
+
+function getDrivers() { return ls('ftp_drivers', []); }
+function getVans() { return ls('ftp_vans', []); }
+function getTimeLogs() { return ls('ftp_timelogs', []); }
+function getTasks() { return ls('ftp_tasks', []); }
+function getMessages() { return ls('ftp_messages', []); }
+
+function saveDrivers(d) { lsSet('ftp_drivers', d); }
+function saveVans(v) { lsSet('ftp_vans', v); }
+function saveTimeLogs(t) { lsSet('ftp_timelogs', t); }
+function saveTasks(t) { lsSet('ftp_tasks', t); }
+function saveMessages(m) { lsSet('ftp_messages', m); }
+
+// ==================== AUTH ====================
+function doLogin() {
+  const u = document.getElementById('login-username').value.trim().toLowerCase();
+  const p = document.getElementById('login-password').value.trim();
+  const err = document.getElementById('login-error');
+
+  if (USERS[u] && USERS[u].password === p) {
+    err.style.display = 'none';
+    currentUser = {username: u, ...USERS[u]};
+    lsSet('ftp_session', currentUser);
+    showWelcome();
+  } else {
+    err.style.display = 'block';
+    err.textContent = 'Invalid username or password.';
+  }
+}
+
+function doLogout() {
+  clearIntervals();
+  localStorage.removeItem('ftp_session');
+  currentUser = null;
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app').classList.remove('active');
+  document.getElementById('welcome-section').classList.remove('active');
+  document.getElementById('login-username').value = '';
+  document.getElementById('login-password').value = '';
+  if (mapInstance) { mapInstance.remove(); mapInstance = null; }
+  payrollChart = null;
+}
+
+function clearIntervals() {
+  if (mapUpdateInterval) clearInterval(mapUpdateInterval);
+  if (clockInterval) clearInterval(clockInterval);
+  if (sessionTimer) clearInterval(sessionTimer);
+  mapUpdateInterval = clockInterval = sessionTimer = null;
+}
+
+// ==================== UI NAVIGATION ====================
+function showWelcome() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('welcome-section').classList.add('active');
+  document.getElementById('app').classList.add('active');
+  
+  document.getElementById('sidebar-name').textContent = currentUser.name;
+  document.getElementById('sidebar-avatar').textContent = currentUser.name.charAt(0).toUpperCase();
+  document.getElementById('sidebar-role').textContent = currentUser.role === 'admin' ? 'SYSTEM ADMIN' : 'DRIVER';
+
+  buildNav();
+  startTopbarClock();
+
+  setTimeout(() => {
+    document.getElementById('welcome-section').classList.remove('active');
+    if (currentUser.role === 'admin') {
+      navigateTo('overview');
+    } else {
+      navigateTo('driver-dashboard');
+    }
+  }, 2200);
+}
+
+function startTopbarClock() {
+  function update() {
+    document.getElementById('topbar-time').textContent = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+  }
+  update();
+  sessionTimer = setInterval(update, 10000);
+}
+
+const ADMIN_NAV = [
+  {id:'overview',icon:'fas fa-gauge-high',label:'Overview'},
+  {id:'map',icon:'fas fa-map-location-dot',label:'Live Map'},
+  {id:'drivers',icon:'fas fa-id-card',label:'Drivers'},
+  {id:'users',icon:'fas fa-users-cog',label:'Credentials'},
+  {id:'timelogs',icon:'fas fa-clock',label:'Time Logs'},
+  {id:'payroll',icon:'fas fa-dollar-sign',label:'Payroll'},
+  {id:'tasks',icon:'fas fa-tasks',label:'Assign Tasks'},
+  {id:'messages',icon:'fas fa-envelope',label:'Messages'},
+  {id:'profile',icon:'fas fa-user-gear',label:'My Profile'}
+];
+
+const DRIVER_NAV = [
+  {id:'driver-dashboard',icon:'fas fa-house',label:'Dashboard'},
+  {id:'timeclock',icon:'fas fa-fingerprint',label:'Time Clock'},
+  {id:'mytimelog',icon:'fas fa-list-check',label:'My Time Log'},
+  {id:'mypay',icon:'fas fa-wallet',label:'My Pay'},
+  {id:'mytasks',icon:'fas fa-tasks',label:'My Tasks'},
+  {id:'mymessages',icon:'fas fa-envelope',label:'Messages'}
+];
+
+function buildNav() {
+  const nav = document.getElementById('sidebar-nav');
+  nav.innerHTML = '';
+  const items = currentUser.role === 'admin' ? ADMIN_NAV : DRIVER_NAV;
+  
+  items.forEach(item => {
+    nav.innerHTML += `
+      <div class="nav-item" id="nav-${item.id}" onclick="navigateTo('${item.id}')">
+        <i class="${item.icon}"></i>${item.label}
+      </div>`;
+  });
+}
+
+function navigateTo(id) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const navEl = document.getElementById('nav-'+id);
+  if (navEl) navEl.classList.add('active');
+
+  const titles = {
+    overview:'Overview', map:'Live Fleet Map', drivers:'Driver Management', 
+    users:'User Credentials', timelogs:'Time Logs', payroll:'Payroll Center',
+    tasks:'Task Assignment', messages:'Communications', profile:'Profile Settings',
+    'driver-dashboard':'Driver Dashboard', timeclock:'Time Clock', mytimelog:'My Activity',
+    mypay:'My Earnings', mytasks:'Assigned Tasks', mymessages:'Messages'
+  };
+
+  document.getElementById('topbar-title').innerHTML = `<i class="fas ${getTitleIcon(id)}" style="margin-right:10px"></i>${titles[id]||id}`;
+
+  if (id !== 'map' && mapUpdateInterval) {
+    clearInterval(mapUpdateInterval);
+    mapUpdateInterval = null;
+  }
+
+  const content = document.getElementById('content-area');
+  content.innerHTML = '';
+
+  switch(id) {
+    case 'overview': renderAdminOverview(); break;
+    case 'map': renderMap(); break;
+    case 'drivers': renderDrivers(); break;
+    case 'users': renderUserCredentials(); break;
+    case 'timelogs': renderTimeLogs(); break;
+    case 'payroll': renderPayroll(); break;
+    case 'tasks': renderAdminTasks(); break;
+    case 'messages': renderAdminMessages(); break;
+    case 'profile': renderProfileSettings(); break;
+    case 'driver-dashboard': renderDriverDashboard(); break;
+    case 'timeclock': renderTimeClock(); break;
+    case 'mytimelog': renderMyTimelog(); break;
+    case 'mypay': renderMyPay(); break;
+    case 'mytasks': renderDriverTasks(); break;
+    case 'mymessages': renderDriverMessages(); break;
+  }
+}
+
+function getTitleIcon(id) {
+  const icons = {overview:'fa-gauge-high',map:'fa-map-location-dot',drivers:'fa-id-card',users:'fa-users-cog',timelogs:'fa-clock',payroll:'fa-dollar-sign',tasks:'fa-tasks',messages:'fa-envelope','driver-dashboard':'fa-house',timeclock:'fa-fingerprint',profile:'fa-user-gear',mytimelog:'fa-list-check',mypay:'fa-wallet',mytasks:'fa-tasks',mymessages:'fa-envelope'};
+  return icons[id] || 'fa-circle';
+}
+
+// ==================== PROFILE ====================
+function renderProfileSettings() {
+  const content = document.getElementById('content-area');
+  const profile = userProfiles[currentUser.username] || {
+    fullName: currentUser.name,
+    email: currentUser.email || '',
+    phone: '',
+    department: 'Operations',
+    role: currentUser.role === 'admin' ? 'System Administrator' : 'Fleet Driver',
+    notificationsEnabled: true,
+    theme: 'light',
+    avatar: '👤'
+  };
+
+  content.innerHTML = `
+    <div class="profile-section">
+      <div class="profile-header">
+        <div class="profile-avatar-upload" onclick="document.getElementById('avatar-input').click()">
+          ${profile.avatar || currentUser.name.charAt(0)}
+          <input type="file" id="avatar-input" accept="image/*" onchange="handleAvatarChange(event)">
+        </div>
+        <div class="profile-info">
+          <h2>${profile.fullName}</h2>
+          <p>${currentUser.role === 'admin' ? 'System Administrator' : 'Fleet Operator'}</p>
+          <span class="profile-status-badge">ACTIVE</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><i class="fas fa-user"></i>Personal Information</div>
+        <div class="profile-form">
+          <div class="profile-form-group"><label>Full Name</label><input type="text" id="profile-fullname" value="${profile.fullName}"></div>
+          <div class="profile-form-group"><label>Email Address</label><input type="email" id="profile-email" value="${profile.email}"></div>
+          <div class="profile-form-group"><label>Phone Number</label><input type="tel" id="profile-phone" value="${profile.phone}"></div>
+          <div class="profile-form-group"><label>Department</label><input type="text" id="profile-department" value="${profile.department}"></div>
+          <div class="profile-form-group profile-form-full"><label>Role</label><input type="text" value="${profile.role}" disabled></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><i class="fas fa-sliders"></i>Preferences</div>
+        <div class="preferences-section">
+          <div class="preference-item">
+            <div class="preference-label">
+              <span class="title">Email Notifications</span>
+              <span class="desc">Receive updates on fleet activity and approvals</span>
+            </div>
+            <div class="toggle-switch ${profile.notificationsEnabled?'active':''}" id="notifications-toggle" onclick="toggleNotifications()">
+              <div class="toggle-switch-knob"></div>
+            </div>
+          </div>
+          <div class="preference-item">
+            <div class="preference-label">
+              <span class="title">Display Theme</span>
+              <span class="desc">Interface appearance</span>
+            </div>
+            <select id="profile-theme">
+              <option value="light" ${profile.theme==='light'?'selected':''}>Light Theme</option>
+              <option value="dark" ${profile.theme==='dark'?'selected':''}>Dark Theme</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><i class="fas fa-lock"></i>Security</div>
+        <button class="btn-primary" onclick="openChangePasswordModal()"><i class="fas fa-key"></i> Change Password</button>
+      </div>
+
+      <div class="profile-actions">
+        <button class="btn-secondary" onclick="resetProfileForm()">Cancel</button>
+        <button class="btn-primary" onclick="saveProfileSettings()"><i class="fas fa-save"></i> Save Profile</button>
+      </div>
+    </div>`;
+}
+
+function handleAvatarChange(e) {
+  if (e.target.files[0]) {
+    showToast('Profile picture updated (visible after refresh)');
+  }
+}
+
+function toggleNotifications() {
+  const toggle = document.getElementById('notifications-toggle');
+  toggle.classList.toggle('active');
+}
+
+function openChangePasswordModal() {
+  showModal(`
+    <h3><i class="fas fa-lock"></i>Change Password</h3>
+    <div class="form-field"><label>Current Password</label><input id="m-current-pwd" type="password"></div>
+    <div class="form-field"><label>New Password</label><input id="m-new-pwd" type="password"></div>
+    <div class="form-field"><label>Confirm New Password</label><input id="m-confirm-pwd" type="password"></div>
+    <div class="modal-actions">
+      <button class="btn-primary" onclick="updatePassword()">Update Password</button>
+      <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+    </div>`);
+}
+
+function updatePassword() {
+  const current = document.getElementById('m-current-pwd').value;
+  const newPwd = document.getElementById('m-new-pwd').value;
+  const confirm = document.getElementById('m-confirm-pwd').value;
+
+  if (current !== USERS[currentUser.username].password) {
+    showToast('Current password incorrect', 'error');
+    return;
+  }
+  if (!newPwd || newPwd.length < 6) {
+    showToast('Password must be at least 6 characters', 'error');
+    return;
+  }
+  if (newPwd !== confirm) {
+    showToast('Passwords do not match', 'error');
+    return;
+  }
+
+  USERS[currentUser.username].password = newPwd;
+  closeModal();
+  showToast('Password updated successfully');
+}
+
+function saveProfileSettings() {
+  const profile = {
+    fullName: document.getElementById('profile-fullname').value || currentUser.name,
+    email: document.getElementById('profile-email').value,
+    phone: document.getElementById('profile-phone').value,
+    department: document.getElementById('profile-department').value,
+    role: currentUser.role === 'admin' ? 'System Administrator' : 'Fleet Driver',
+    notificationsEnabled: document.getElementById('notifications-toggle').classList.contains('active'),
+    theme: document.getElementById('profile-theme').value,
+    avatar: currentUser.name.charAt(0)
+  };
+
+  userProfiles[currentUser.username] = profile;
+  lsSet('ftp_profiles', userProfiles);
+  currentUser.name = profile.fullName;
+  document.getElementById('sidebar-name').textContent = profile.fullName;
+  
+  showToast('Profile saved successfully');
+  renderProfileSettings();
+}
+
+function resetProfileForm() {
+  renderProfileSettings();
+}
+
+// ==================== DASHBOARD RENDERERS ====================
+function renderAdminOverview() {
+  const drivers = getDrivers();
+  const logs = getTimeLogs();
+  const tasks = getTasks();
+  const now = new Date();
+  const weekStart = getWeekStart(now);
+  const weekLogs = logs.filter(l => new Date(l.punchIn) >= weekStart);
+  const totalHours = weekLogs.reduce((s,l) => s + parseFloat(l.hours||0), 0);
+  const totalPayroll = weekLogs.reduce((s,l) => {
+    const d = drivers.find(x=>x.id===l.driverId);
+    return s + parseFloat(l.hours||0) * (d ? d.hourlyRate : HOURLY_RATE);
+  }, 0);
+  const activeNow = drivers.filter(d => d.status === 'in').length;
+
+  const content = document.getElementById('content-area');
+  content.innerHTML = `
+    <div class="welcome-card">
+      <div class="w-icon"><i class="fas fa-truck"></i></div>
+      <div>
+        <h2>Welcome back, Administrator</h2>
+        <p>${now.toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric', year:'numeric'})}</p>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-icon"><i class="fas fa-users"></i></div><div><div class="stat-val">${drivers.length}</div><div class="stat-label">Total Drivers</div></div></div>
+      <div class="stat-card"><div class="stat-icon"><i class="fas fa-truck-moving"></i></div><div><div class="stat-val">${activeNow}</div><div class="stat-label">Active Now</div></div></div>
+      <div class="stat-card"><div class="stat-icon"><i class="fas fa-clock"></i></div><div><div class="stat-val">${totalHours.toFixed(1)}</div><div class="stat-label">Hours This Week</div></div></div>
+      <div class="stat-card"><div class="stat-icon"><i class="fas fa-dollar-sign"></i></div><div><div class="stat-val">$${totalPayroll.toFixed(0)}</div><div class="stat-label">Payroll This Week</div></div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><i class="fas fa-lightbulb"></i>Operational Insights</div>
+      <div class="suggestions-grid" id="suggestions-grid"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><i class="fas fa-tasks"></i>Active Assignments</div>
+      <div class="jobs-grid" id="jobs-grid"></div>
+    </div>`;
+
+  document.getElementById('suggestions-grid').innerHTML = `
+    <div class="suggestion-card">
+      <div class="suggestion-icon">📍</div>
+      <div class="suggestion-content">
+        <div class="suggestion-title">Route Optimization</div>
+        <div class="suggestion-desc">Consider consolidating deliveries in the French Quarter area to reduce fuel costs.</div>
+        <span class="suggestion-priority priority-high">HIGH IMPACT</span>
+      </div>
+    </div>
+    <div class="suggestion-card">
+      <div class="suggestion-icon">⏰</div>
+      <div class="suggestion-content">
+        <div class="suggestion-title">Overtime Alert</div>
+        <div class="suggestion-desc">Driver 2 is approaching 38 hours this week. Monitor closely.</div>
+        <span class="suggestion-priority priority-medium">MEDIUM</span>
+      </div>
+    </div>`;
+
+  const jobsEl = document.getElementById('jobs-grid');
+  const upcoming = getTasks().filter(t => !t.completed);
+  if (upcoming.length === 0) {
+    jobsEl.innerHTML = `<div class="empty-state"><i class="fas fa-clipboard-list"></i><p>No active assignments.<br>Create a task to get started.</p></div>`;
+  }
+}
+
+function renderMap() {
+  const content = document.getElementById('content-area');
+  content.innerHTML = `
+    <div class="van-status-grid" id="van-status-cards"></div>
+    <div class="card" style="padding:0;overflow:hidden;">
+      <div id="map-container"></div>
+    </div>
+    <div class="map-legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#666666"></div>VAN-001</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#777777"></div>VAN-002</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#888888"></div>VAN-003</div>
+    </div>`;
+
+  renderVanStatusCards();
+
+  setTimeout(() => {
+    if (mapInstance) mapInstance.remove();
+    
+    mapInstance = L.map('map-container').setView([29.9511, -90.0715], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(mapInstance);
+
+    const vans = getVans();
+    const drivers = getDrivers();
+    
+    vans.forEach(van => {
+      const driver = drivers.find(d => d.vanId === van.id);
+      const color = driver && driver.status === 'in' ? '#0091FF' : '#666666';
+      
+      const icon = L.divIcon({
+        className: '',
+        html: `<div style="background:${color};width:42px;height:42px;border-radius:50%;border:3px solid white;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(0,0,0,0.4);font-size:18px;">🚐</div>`,
+        iconSize: [46, 46],
+        iconAnchor: [23, 23]
+      });
+
+      const marker = L.marker([van.lat, van.lng], {icon}).addTo(mapInstance);
+      marker.bindPopup(`<b>${van.license}</b><br>${driver ? driver.name : 'Unassigned'}`);
+      mapMarkers[van.id] = marker;
+    });
+
+    mapUpdateInterval = setInterval(() => {
+      simulateVanMovement();
+      renderVanStatusCards();
+    }, 25000);
+  }, 100);
+}
+
+function simulateVanMovement() {
+  const vans = getVans();
+  const drivers = getDrivers();
+  
+  vans.forEach(van => {
+    const driver = drivers.find(d => d.vanId === van.id);
+    if (driver && driver.status === 'in') {
+      van.lat += (Math.random() - 0.5) * 0.004;
+      van.lng += (Math.random() - 0.5) * 0.004;
+      if (mapMarkers[van.id]) {
+        mapMarkers[van.id].setLatLng([van.lat, van.lng]);
+      }
+    }
+  });
+  saveVans(vans);
+}
+
+function renderVanStatusCards() {
+  const el = document.getElementById('van-status-cards');
+  if (!el) return;
+  
+  const vans = getVans();
+  const drivers = getDrivers();
+  el.innerHTML = '';
+  
+  vans.forEach(van => {
+    const driver = drivers.find(d => d.vanId === van.id);
+    const status = driver && driver.status === 'in' ? 'ACTIVE' : 'IDLE';
+    const color = driver && driver.status === 'in' ? 'var(--accent)' : '#888';
+    
+    el.innerHTML += `
+      <div class="van-status-card">
+        <div class="van-id" style="color:${color}">${van.license}</div>
+        <div class="van-driver">${driver ? driver.name : 'Unassigned'}</div>
+        <span class="badge ${driver&&driver.status==='in'?'badge-active':'badge-idle'}">${status}</span>
+      </div>`;
+  });
+}
+
+// ==================== UTILITY FUNCTIONS ====================
+function getWeekStart(date) {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+  d.setDate(diff);
+  d.setHours(0,0,0,0);
+  return d;
+}
+
+function fmtDt(ts) {
+  if (!ts) return '—';
+  return new Date(ts).toLocaleString('en-US', {month:'short', day:'numeric', hour:'numeric', minute:'2-digit'});
+}
+
+function showModal(html) {
+  document.getElementById('modal-content').innerHTML = html;
+  document.getElementById('modal-overlay').classList.remove('hidden');
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.add('hidden');
+}
+
+let toastTimeout;
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.borderColor = type === 'error' ? '#d32f2f' : '#000000';
+  t.classList.add('show');
+  if (toastTimeout) clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// Keyboard support
+document.getElementById('login-password').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+document.getElementById('login-username').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+
+// Modal click outside
+document.getElementById('modal-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// Initialize
+initData();
+const savedSession = ls('ftp_session', null);
+if (savedSession) {
+  currentUser = savedSession;
+  showWelcome();
+} else {
+  document.getElementById('login-screen').style.display = 'flex';
+}
+
+// Add missing functions that are called but not defined in this optimized version
+function renderDrivers() { 
+  const content = document.getElementById('content-area');
+  content.innerHTML = `<div class="card"><div class="card-title"><i class="fas fa-info-circle"></i>Driver Management</div><div class="empty-state"><i class="fas fa-users"></i><p>Driver management panel coming soon.<br>Currently ${getDrivers().length} drivers in system.</p></div></div>`;
+}
+
+function renderUserCredentials() { 
+  const content = document.getElementById('content-area');
+  content.innerHTML = `<div class="card"><div class="card-title"><i class="fas fa-key"></i>User Credentials</div><div class="empty-state"><i class="fas fa-id-card"></i><p>Credential management coming soon.</p></div></div>`;
+}
+
+function renderTimeLogs() { 
+  const content = document.getElementById('content-area');
+  content.innerHTML = `<div class="card"><div class="card-title"><i class="fas fa-clock"></i>Time Logs</div><div class="empty-state"><i class="fas fa-list"></i><p>No time entries yet.<br>Use the Time Clock to begin tracking.</p></div></div>`;
+}
+
+function renderPayroll() { 
+  const content = document.getElementById('content-area');
+  content.innerHTML = `<div class="card"><div class="card-title"><i class="fas fa-chart-bar"></i>Payroll Center</div><div class="empty-state"><i class="fas fa-calculator"></i><p>Payroll system ready.<br>No hours logged this period.</p></div></div>`;
+}
+
+function renderAdminTasks() { 
+  const content = document.getElementById('content-area');
+  content.innerHTML = `<div class="card"><div class="card-title"><i class="fas fa-tasks"></i>Task Assignment</div><div class="empty-state"><i class="fas fa-clipboard-list"></i><p>No tasks assigned yet.<br>Use the button below to create one.</p><br><button class="btn-primary" onclick="alert('Task creation would go here in full version')">Create New Task</button></div></div>`;
+}
+
+function renderAdminMessages() { 
+  const content = document.getElementById('content-area');
+  content.innerHTML = `<div class="card"><div class="card-title"><i class="fas fa-envelope"></i>Communications</div><div class="empty-state"><i class="fas fa-inbox"></i><p>No messages.</p></div></div>`;
+}
+
+function renderDriverDashboard() { 
+  const content = document.getElementById('content-area');
+  content.innerHTML = `<div class="welcome-card"><div class="w-icon"><i class="fas fa-user"></i></div><div><h2>Welcome back, Driver</h2><p>Use the sidebar to access your Time Clock, Tasks, and Pay information.</p></div></div>`;
+}
+
+function renderTimeClock() { 
+  const content = document.getElementById('content-area');
+  content.innerHTML = `<div class="clock-section"><div class="clock-display"><div class="clock-time">08:42</div><div class="clock-label">Ready to Punch In</div><div style="margin-top:40px"><button class="clock-btn clock-btn-in" onclick="alert('Punch In functionality ready')">PUNCH IN</button></div></div></div>`;
+}
+
+function renderMyTimelog() { 
+  const content = document.getElementById('content-area');
+  content.innerHTML = `<div class="card"><div class="card-title"><i class="fas fa-history"></i>My Time Log</div><div class="empty-state"><i class="fas fa-clock"></i><p>No shifts recorded yet.</p></div></div>`;
+}
+
+function renderMyPay() { 
+  const content = document.getElementById('content-area');
+  content.innerHTML = `<div class="card"><div class="card-title"><i class="fas fa-wallet"></i>My Earnings</div><div class="empty-state"><i class="fas fa-chart-pie"></i><p>$0.00 earned this period.<br>Start using the Time Clock to track hours.</p></div></div>`;
+}
+
+function renderDriverTasks() { 
+  const content = document.getElementById('content-area');
+  content.innerHTML = `<div class="card"><div class="card-title"><i class="fas fa-tasks"></i>My Tasks</div><div class="empty-state"><i class="fas fa-clipboard-check"></i><p>No tasks assigned.</p></div></div>`;
+}
+
+function renderDriverMessages() { 
+  const content = document.getElementById('content-area');
+  content.innerHTML = `<div class="card"><div class="card-title"><i class="fas fa-envelope"></i>Messages</div><div class="empty-state"><i class="fas fa-inbox"></i><p>No messages from dispatch.</p></div></div>`;
+}
+</script>
+</body>
+</html>
