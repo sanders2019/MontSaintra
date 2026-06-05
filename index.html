@@ -94,10 +94,7 @@
 <script>
 // ==================== CONFIG & DATA ====================
 const USERS = {
-  admin: {password:'admin123',role:'admin',name:'Administrator',email:'admin@montsaintra.com'},
-  driver1: {password:'driver123',role:'driver',name:'Driver One',driverId:'D1',email:'driver1@montsaintra.com'},
-  driver2: {password:'driver123',role:'driver',name:'Driver Two',driverId:'D2',email:'driver2@montsaintra.com'},
-  driver3: {password:'driver123',role:'driver',name:'Driver Three',driverId:'D3',email:'driver3@montsaintra.com'}
+  admin: {password:'admin123',role:'admin',name:'Administrator',email:'admin@montsaintra.com'}
 };
 
 const BASE_COORDS = [
@@ -490,44 +487,93 @@ function resetProfileForm() {
 // ==================== DASHBOARD RENDERERS ====================
 function renderAdminOverview() {
   const drivers = getDrivers();
-  const logs = getTimeLogs();
   const tasks = getTasks();
   const now = new Date();
-  const weekStart = getWeekStart(now);
-  const weekLogs = logs.filter(l => new Date(l.punchIn) >= weekStart);
-  const totalHours = weekLogs.reduce((s,l) => s + parseFloat(l.hours||0), 0);
-  const totalPayroll = weekLogs.reduce((s,l) => {
-    const d = drivers.find(x=>x.id===l.driverId);
-    return s + parseFloat(l.hours||0) * (d ? d.hourlyRate : HOURLY_RATE);
-  }, 0);
-  const activeNow = drivers.filter(d => d.status === 'in').length;
+  const activeDrivers = drivers.filter(d => d.status === 'in').length;
+  const pendingTasks = tasks.filter(t => !t.completed).length;
 
   const content = document.getElementById('content-area');
   content.innerHTML = `
-    <div class="welcome-card">
-      <div class="w-icon"><i class="fas fa-truck"></i></div>
-      <div>
-        <h2>Welcome back, Administrator</h2>
-        <p>${now.toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric', year:'numeric'})}</p>
-      </div>
+    <div style="margin-bottom:32px;">
+      <h2 style="font-size:28px;font-weight:700;color:#000;margin-bottom:8px;">Fleet Operations Center</h2>
+      <p style="color:#555;">Real-time overview • ${now.toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric'})}</p>
     </div>
 
     <div class="stats-grid">
-      <div class="stat-card"><div class="stat-icon"><i class="fas fa-users"></i></div><div><div class="stat-val">${drivers.length}</div><div class="stat-label">Total Drivers</div></div></div>
-      <div class="stat-card"><div class="stat-icon"><i class="fas fa-truck-moving"></i></div><div><div class="stat-val">${activeNow}</div><div class="stat-label">Active Now</div></div></div>
-      <div class="stat-card"><div class="stat-icon"><i class="fas fa-clock"></i></div><div><div class="stat-val">${totalHours.toFixed(1)}</div><div class="stat-label">Hours This Week</div></div></div>
-      <div class="stat-card"><div class="stat-icon"><i class="fas fa-dollar-sign"></i></div><div><div class="stat-val">$${totalPayroll.toFixed(0)}</div><div class="stat-label">Payroll This Week</div></div></div>
+      <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-users"></i></div>
+        <div>
+          <div class="stat-val">${drivers.length}</div>
+          <div class="stat-label">Total Personnel</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-truck"></i></div>
+        <div>
+          <div class="stat-val">${activeDrivers}</div>
+          <div class="stat-label">Active on Road</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-tasks"></i></div>
+        <div>
+          <div class="stat-val">${pendingTasks}</div>
+          <div class="stat-label">Pending Tasks</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-map-marker-alt"></i></div>
+        <div>
+          <div class="stat-val">3</div>
+          <div class="stat-label">Vehicles Online</div>
+        </div>
+      </div>
     </div>
 
     <div class="card">
-      <div class="card-title"><i class="fas fa-lightbulb"></i>Operational Insights</div>
-      <div class="suggestions-grid" id="suggestions-grid"></div>
+      <div class="card-title"><i class="fas fa-clipboard-list"></i>Quick Actions</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;">
+        <div onclick="navigateTo('tasks')" style="padding:20px;border:2px solid #000;border-radius:12px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='#f8f8f8'" onmouseout="this.style.background='white'">
+          <h3 style="margin:0 0 8px 0;font-size:18px;">📋 Assign Task</h3>
+          <p style="margin:0;color:#555;font-size:14px;">Create and assign delivery tasks</p>
+        </div>
+        <div onclick="navigateTo('drivers')" style="padding:20px;border:2px solid #000;border-radius:12px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='#f8f8f8'" onmouseout="this.style.background='white'">
+          <h3 style="margin:0 0 8px 0;font-size:18px;">👥 Manage Team</h3>
+          <p style="margin:0;color:#555;font-size:14px;">Add drivers and assistants</p>
+        </div>
+        <div onclick="navigateTo('map')" style="padding:20px;border:2px solid #000;border-radius:12px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='#f8f8f8'" onmouseout="this.style.background='white'">
+          <h3 style="margin:0 0 8px 0;font-size:18px;">🗺️ Live Tracking</h3>
+          <p style="margin:0;color:#555;font-size:14px;">Monitor all vehicle destinations</p>
+        </div>
+      </div>
     </div>
 
     <div class="card">
-      <div class="card-title"><i class="fas fa-tasks"></i>Active Assignments</div>
-      <div class="jobs-grid" id="jobs-grid"></div>
+      <div class="card-title"><i class="fas fa-map-marker-alt"></i>Current Destinations</div>
+      <div id="destinations-list" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;"></div>
     </div>`;
+  
+  renderDestinations();
+}
+
+function renderDestinations() {
+  const container = document.getElementById('destinations-list');
+  const sampleDestinations = [
+    {van: "VAN-001", driver: "Driver One", destination: "French Quarter Warehouse", eta: "14:20"},
+    {van: "VAN-002", driver: "Driver Two", destination: "Airport Cargo Terminal", eta: "15:45"},
+    {van: "VAN-003", driver: "Driver Three", destination: "Downtown Distribution", eta: "13:10"}
+  ];
+
+  container.innerHTML = sampleDestinations.map(d => `
+    <div style="border:2px solid #000;border-radius:12px;padding:16px;background:white;">
+      <div style="font-weight:600;color:var(--accent);margin-bottom:4px;">${d.van}</div>
+      <div style="font-size:15px;margin-bottom:8px;">${d.driver}</div>
+      <div style="font-size:14px;color:#333;">→ ${d.destination}</div>
+      <div style="margin-top:12px;font-size:13px;color:#666;">ETA: ${d.eta}</div>
+    </div>
+  `).join('');
+}
+
 
   document.getElementById('suggestions-grid').innerHTML = `
     <div class="suggestion-card">
